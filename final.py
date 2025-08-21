@@ -24,8 +24,7 @@ class face:
             'nostril': ['nostrilRight','nostrilLeft']
             }
         self.img = cv2.imread(image_path)
-        #self.img = cv2.resize(self.img, (640, 480))
-        #self.img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB)
         self.h, self.w = self.img.shape[:2]
         self.mp_face_mesh = mp.solutions.face_mesh
         with self.mp_face_mesh.FaceMesh(
@@ -38,8 +37,7 @@ class face:
         self.mp_drawing = mp.solutions.drawing_utils
         self.drawing_spec = mp.solutions.drawing_utils.DrawingSpec(color=(255,255,255), thickness=1, circle_radius=2)
         face_mesh = self.mp_face_mesh.FaceMesh(static_image_mode=True, max_num_faces=1)
-        print("Faces detected:", bool(self.results.multi_face_landmarks))
-        #self.results = face_mesh.process(self.img)
+        #print("Faces detected:", bool(self.results.multi_face_landmarks))
         self.dic = {}
         h, w = self.img.shape[:2]  # Get image dimensions
         if self.results.multi_face_landmarks:
@@ -48,7 +46,6 @@ class face:
                     self.dic[str(i)] = [int(lm.x * self.w), int(lm.y * self.h)]
 
     def create_landmarks(self,l):
-        # Draw selected landmarks
         temp_img = cv2.resize(self.img, (640, 480))
         if self.results.multi_face_landmarks:
             for face_landmarks in self.results.multi_face_landmarks:
@@ -91,7 +88,6 @@ class face:
                 lm = face_landmarks.landmark[idx]
                 x_arr.append(lm.x*self.w)
                 y_arr.append(lm.y*self.h)
-                #cv2.circle(self.img, (x, y), radius=2, color=(0, 255, 0), thickness=-1)
         c,m = np.polyfit(x_arr,y_arr,1)
         if 'mouth' in name:
             difference = np.array([0,y_arr[0]])
@@ -99,7 +95,6 @@ class face:
             difference = np.array([x_arr[0],0])
         arr1 = (arr1 - difference).T
         arr2 = (arr2 - difference).T
-        #m = middle(self.img,self.results)
         theta = np.arctan(m)
         M = np.array([[np.cos(2*theta),np.sin(2*theta)],
                       [np.sin(2*theta),-np.cos(2*theta)]])
@@ -114,13 +109,6 @@ class face:
         l = self.angles_df[col]
         m = np.array([self.dic[str(i)] for i in l])
         return 180 - (np.arccos(np.dot(m[0]-m[1],m[1]-m[2]) / (np.linalg.norm(m[0]-m[1])*np.linalg.norm(m[1]-m[2]))) * 180/np.pi)
-
-    '''def thing(self,L1,L2,R1,R2):
-        v = L1-L2
-        angle_L = np.arctan(v[1]/v[0])
-        u = R1 - R2
-        angle_R = np.arctan(u[1]/u[0])
-        return (angle_L +angle_R)/2'''
 
     def thing2(self,dic):
         return 2*np.linalg.norm(dic['468']-dic['473'])/(np.linalg.norm(dic['468']-dic['0'])+np.linalg.norm(dic['743']-dic['0']))
@@ -159,4 +147,5 @@ for method in methods:
     try:
         method()
     except TypeError:
+
         pass'''
