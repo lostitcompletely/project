@@ -135,7 +135,7 @@ def facial_convexity_angle(img_R,img_L):
     return (angle_L +angle_R)/2
 
 
-f = face('image2.jpg')
+f = face('image.jpg')
 #f.create_landmarks([172,397,234,454])
 print(f.distance('eye separation ratio'))
 
@@ -149,4 +149,5 @@ for method in methods:
     except TypeError:
 
         pass'''
+
 
