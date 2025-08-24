@@ -4,7 +4,7 @@ import mediapipe as mp
 from mediapipe.tasks.python import vision
 import numpy as np
 import pandas as pd
-
+import inspect
 class face:
     def __init__(self,image_path):
         self.symmetry_df = pd.read_csv('landmarks.csv')
@@ -24,29 +24,28 @@ class face:
             'nostril': ['nostrilRight','nostrilLeft']
             }
         self.img = cv2.imread(image_path)
-        self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB)
         self.h, self.w = self.img.shape[:2]
         self.mp_face_mesh = mp.solutions.face_mesh
         with self.mp_face_mesh.FaceMesh(
             static_image_mode=True,
             max_num_faces=1,
             refine_landmarks=True,  
-            min_detection_confidence=0.05
+            min_detection_confidence=0.5
         ) as face_mesh:
             self.results = face_mesh.process(self.img)
         self.mp_drawing = mp.solutions.drawing_utils
         self.drawing_spec = mp.solutions.drawing_utils.DrawingSpec(color=(255,255,255), thickness=1, circle_radius=2)
         face_mesh = self.mp_face_mesh.FaceMesh(static_image_mode=True, max_num_faces=1)
-        #print("Faces detected:", bool(self.results.multi_face_landmarks))
+        print("Faces detected:", bool(self.results.multi_face_landmarks))
         self.dic = {}
         h, w = self.img.shape[:2]  # Get image dimensions
         if self.results.multi_face_landmarks:
             for face_landmarks in self.results.multi_face_landmarks:
                 for i,lm in enumerate(face_landmarks.landmark):
-                    self.dic[str(i)] = [int(lm.x * self.w), int(lm.y * self.h)]
+                    self.dic[str(i)] = np.array([int(lm.x * self.w), int(lm.y * self.h)])
 
-    def create_landmarks(self,l):
-        temp_img = cv2.resize(self.img, (640, 480))
+    def create_landmarks(self,l=None):
+        temp_img = cv2.resize(self.img, (480, 640))
         if self.results.multi_face_landmarks:
             for face_landmarks in self.results.multi_face_landmarks:
                 self.mp_drawing.draw_landmarks(
@@ -56,13 +55,13 @@ class face:
                     landmark_drawing_spec=self.drawing_spec,
                     connection_drawing_spec=self.drawing_spec
                 )
-                for i in l:
-                    lm = face_landmarks.landmark[i]
-                    x = int(lm.x * self.w)
-                    y = int(lm.y * self.h)
-                    cv2.circle(temp_img, (x, y), radius=2, color=(0, 255, 0), thickness=4)
-                
-        cv2.imshow("Selected Landmarks", self.img)
+                if l != None:
+                    for i in l:
+                        lm = face_landmarks.landmark[i]
+                        x = int(lm.x * self.w)
+                        y = int(lm.y * self.h)
+                        cv2.circle(temp_img, (x, y), radius=2, color=(0, 255, 0), thickness=4)       
+        cv2.imshow("Selected Landmarks", temp_img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
@@ -110,18 +109,26 @@ class face:
         m = np.array([self.dic[str(i)] for i in l])
         return 180 - (np.arccos(np.dot(m[0]-m[1],m[1]-m[2]) / (np.linalg.norm(m[0]-m[1])*np.linalg.norm(m[1]-m[2]))) * 180/np.pi)
 
-    def thing2(self,dic):
-        return 2*np.linalg.norm(dic['468']-dic['473'])/(np.linalg.norm(dic['468']-dic['0'])+np.linalg.norm(dic['743']-dic['0']))
- 
     def distance(self,name):
-        if name == 'PFL-PFH':
+        def alt1():
             return (np.linalg.norm(self.dic['33']-self.dic['133'])+np.linalg.norm(self.dic['362']-self.dic['263']))/(np.linalg.norm(self.dic['159']-self.dic['145'])+np.linalg.norm(self.dic['386']-self.dic['374']))
-        elif name == 'eyebrow':
-            return (2*np.linalg.norm(self.dic['223']-self.dic['159'])/np.linalg.norm(self.dic['159']-self.dic['145']))+(np.linalg.norm(self.dic['443']-self.dic['386'])/np.linalg.norm(self.dic['386']-self.dic['374']))
-        elif name == 'golden ratio':
-            return np.linalg.norm(self.dic['2']-self.dic['200'])/np.linalg.norm(self.dic['9']-self.dic['2'])        
-        elif name == 'fifth':
+        def alt2():
+            return 2*np.linalg.norm(self.dic['223']-self.dic['159'])/np.linalg.norm(self.dic['159']-self.dic['145'])
+        def alt3():
+            return np.linalg.norm(self.dic['2']-self.dic['200'])/np.linalg.norm(self.dic['9']-self.dic['2'])
+        def alt4():
             return np.linalg.norm(self.dic['234']-self.dic['454'])/5
+        def alt5():
+            return 2*np.linalg.norm(self.dic['468']-self.dic['473'])/(np.linalg.norm(self.dic['468']-self.dic['0'])+np.linalg.norm(self.dic['473']-self.dic['0']))
+        names = {
+            'PFL-PFH': alt1(),
+            'eyebrow': alt2(),
+            'golden': alt3(),
+            'fifths': alt4(),
+            'midface': alt5()
+        }
+        if name in names.keys():
+            return names.get(name)
         else:
             l = self.ratios_df[name]
             m = np.array([self.dic[str(i)] for i in l])
@@ -135,19 +142,19 @@ def facial_convexity_angle(img_R,img_L):
     return (angle_L +angle_R)/2
 
 
-f = face('image.jpg')
-#f.create_landmarks([172,397,234,454])
-print(f.distance('eye separation ratio'))
+def run_all(image_path1,image_path2=None):
+    obj1 = face(image_path1)
+    obj1.create_landmarks()
+    ratios = pd.read_csv('ratios.csv').columns.tolist()
+    angles = pd.read_csv('angles.csv').columns.tolist()
+    symmetry = pd.read_csv('landmarks.csv').columns.tolist()
+    for i in ratios:
+        print(f"{i} ratio: {obj1.distance(i)}")
+    for i in angles:
+        print(f"{i} angle: {obj1.theta(i)}")
+    #for i in symmetry:
+    #    print(f"{i} symmetry: {obj1.transform(i)}")
+    if image_path2:
+        print(f"Facial Convexity Angle: {facial_convexity_angle(image_path1,image_path2)}")
 
-
-
-'''attrs = (getattr(f, name) for name in dir(f))
-methods = ifilter(inspect.ismethod,attrs)
-for method in methods:
-    try:
-        method()
-    except TypeError:
-
-        pass'''
-
-
+run_all('image2.jpeg')
