@@ -187,20 +187,18 @@ def save_results(output=False):
     '''
     # counts the number of sets of images 
     count = 0
-    for file in os.listdir():
-        beg = file.split('.')
-        if beg[1] == 'jpg':
-            count += 1
+    for file in os.listdir('images'):
+        count += 1
     count = int(count/4)
 
     l = []
     # loops through each set of images
     for num in range(1,count+1):
         # makes the path for each image in the setusing the naming convention
-        path = 'image'+str(num)+'.jpg'
-        path_L = 'image'+str(num)+'_L.jpg'
-        path_R = 'image'+str(num)+'_R.jpg'
-        path_smile = 'image'+str(num)+'_smile.jpg'
+        path = 'images/image'+str(num)+'.jpg'
+        path_L = 'images/image'+str(num)+'_L.jpg'
+        path_R = 'images/image'+str(num)+'_R.jpg'
+        path_smile = 'images/image'+str(num)+'_smile.jpg'
 
         # get metrics for the smiling and normal faces and save it to a dictionary
         dic1 = run_all(path,image_path_L=path_L,image_path_R=path_R,output=output)
@@ -211,13 +209,6 @@ def save_results(output=False):
     # saves the list of dictionaries to a csv file
     df = pd.DataFrame(l)
     df.to_csv('results.csv',index=False)
-
-# rename any jpeg files to jpg
-count = 0
-for file in os.listdir():
-    beg = file.split('.')
-    if beg[1] == 'jpeg':
-        os.rename(file, beg[0]+'.jpg')
 
 # pass output=True to print results to terminal
 save_results()
