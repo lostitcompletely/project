@@ -7,10 +7,10 @@ import pandas as pd
 import os
 class face:
     def __init__(self,image_path):
-        self.symmetry_df = pd.read_csv('landmarks.csv')
+        self.symmetry_df = pd.read_csv('data/landmarks.csv')
         self.symmetry_df = self.symmetry_df.dropna()
-        self.ratios_df = pd.read_csv('ratios.csv')
-        self.angles_df = pd.read_csv('angles.csv')
+        self.ratios_df = pd.read_csv('data/ratios.csv')
+        self.angles_df = pd.read_csv('data/angles.csv')
         self.symmetry_measurements = {
             'jaw flare': ['RJA','LJA'],
             'brow upper': ['rightEyebrowUpper','leftEyebrowUpper'],
@@ -156,9 +156,9 @@ def run_all(image_path,image_path_L=None,image_path_R=None,output=False):
     # draw landmarks on image
     obj1.create_landmarks()
     # get list of ratios, angles, and symmetry measurements from csv files
-    ratios = pd.read_csv('ratios.csv').columns.tolist()
-    angles = pd.read_csv('angles.csv').columns.tolist()
-    symmetry = pd.read_csv('landmarks.csv').columns.tolist()
+    ratios = pd.read_csv('data/ratios.csv').columns.tolist()
+    angles = pd.read_csv('data/angles.csv').columns.tolist()
+    symmetry = pd.read_csv('data/landmarks.csv').columns.tolist()
     #saves results to dictionary and prints to terminal if output=True
     for i in ratios:
         val = obj1.distance(i)
