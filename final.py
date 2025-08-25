@@ -110,6 +110,8 @@ class face:
         return 180 - (np.arccos(np.dot(m[0]-m[1],m[1]-m[2]) / (np.linalg.norm(m[0]-m[1])*np.linalg.norm(m[1]-m[2]))) * 180/np.pi)
 
     def distance(self,name):
+        '''calculates distance ratios
+           some ratios have custom calculations'''
         def alt1():
             return (np.linalg.norm(self.dic['33']-self.dic['133'])+np.linalg.norm(self.dic['362']-self.dic['263']))/(np.linalg.norm(self.dic['159']-self.dic['145'])+np.linalg.norm(self.dic['386']-self.dic['374']))
         def alt2():
@@ -140,24 +142,33 @@ def facial_convexity_angle(img_R,img_L):
     return (angle_L +angle_R)/2
 
 
-def run_all(image_path,image_path_L=None,image_path_R=None):
+def run_all(image_path,image_path_L=None,image_path_R=None,output=False):
+    '''runs all methods in the face class and returns a dictionary of results
+       pass image_path_L and image_path_R to calculate facial convexity angle
+       and output=True to print results to terminal'''
     if '_smile' in image_path:
         string = ' smile'
     else:
         string = ''
     metrics = {}
+    # create face object
     obj1 = face(image_path)
+    # draw landmarks on image
     obj1.create_landmarks()
+    # get list of ratios, angles, and symmetry measurements from csv files
     ratios = pd.read_csv('ratios.csv').columns.tolist()
     angles = pd.read_csv('angles.csv').columns.tolist()
     symmetry = pd.read_csv('landmarks.csv').columns.tolist()
+    #saves results to dictionary and prints to terminal if output=True
     for i in ratios:
         val = obj1.distance(i)
-        print(f'{i} ratio: {val}')
+        if output == True:
+            print(f'{i} ratio: {val}')
         metrics[str(i)+' ratio'+string] = val
     for i in angles:
         val = obj1.theta(i)
-        print(f'{i} angle: {val}')
+        if output == True:
+            print(f'{i} angle: {val}')
         metrics[str(i)+' angle'+string] = val
     #for i in symmetry:
     #    print(f"{i} symmetry: {obj1.transform(i)}")
@@ -168,33 +179,45 @@ def run_all(image_path,image_path_L=None,image_path_R=None):
         metrics['FCA'] = val
     return metrics
 
-def save_results():
+def save_results(output=False):
+    '''save results for each image in the same csv file,
+       uses the run_all function to run each method in the object,
+       assumes images are named image1.jpg, image2.jpg, etc.
+       each set of images should have 4 images: imageX.jpg, imageX_L.jpg, imageX_R.jpg, imageX_smile.jpg
+    '''
+    # counts the number of sets of images 
     count = 0
     for file in os.listdir():
         beg = file.split('.')
         if beg[1] == 'jpg':
             count += 1
     count = int(count/4)
-    print(count)
+
     l = []
+    # loops through each set of images
     for num in range(1,count+1):
+        # makes the path for each image in the setusing the naming convention
         path = 'image'+str(num)+'.jpg'
         path_L = 'image'+str(num)+'_L.jpg'
         path_R = 'image'+str(num)+'_R.jpg'
         path_smile = 'image'+str(num)+'_smile.jpg'
-        dic1 = run_all(path,image_path_L=path_L,image_path_R=path_R)
-        dic2 = run_all(path_smile)
+
+        # get metrics for the smiling and normal faces and save it to a dictionary
+        dic1 = run_all(path,image_path_L=path_L,image_path_R=path_R,output=output)
+        dic2 = run_all(path_smile,output=output)
         dic_total = dic1 | dic2
         l.append(dic_total)
+
+    # saves the list of dictionaries to a csv file
     df = pd.DataFrame(l)
     df.to_csv('results.csv',index=False)
 
+# rename any jpeg files to jpg
 count = 0
 for file in os.listdir():
     beg = file.split('.')
     if beg[1] == 'jpeg':
         os.rename(file, beg[0]+'.jpg')
 
-#f = face('image2.jpeg')
-#print(f.distance('PFL-PFH'))
+# pass output=True to print results to terminal
 save_results()
