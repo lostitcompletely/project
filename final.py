@@ -4,7 +4,7 @@ import mediapipe as mp
 from mediapipe.tasks.python import vision
 import numpy as np
 import pandas as pd
-import inspect
+import os
 class face:
     def __init__(self,image_path):
         self.symmetry_df = pd.read_csv('landmarks.csv')
@@ -135,26 +135,66 @@ class face:
             return np.linalg.norm(m[0]-m[1])/np.linalg.norm(m[2]-m[3])
         
 def facial_convexity_angle(img_R,img_L):
-    image_R = cv2.imread(img_R)
-    image_L = cv2.imread(img_L)
-    angle_R = face(image_R).theta('FCA')
-    angle_L = face(image_L).theta('FCA')
+    angle_R = face(img_R).theta('FCA')
+    angle_L = face(img_L).theta('FCA')
     return (angle_L +angle_R)/2
 
 
-def run_all(image_path1,image_path2=None):
-    obj1 = face(image_path1)
+def run_all(image_path,image_path_L=None,image_path_R=None):
+    if '_smile' in image_path:
+        string = ' smile'
+    else:
+        string = ''
+    metrics = {}
+    obj1 = face(image_path)
     obj1.create_landmarks()
     ratios = pd.read_csv('ratios.csv').columns.tolist()
     angles = pd.read_csv('angles.csv').columns.tolist()
     symmetry = pd.read_csv('landmarks.csv').columns.tolist()
     for i in ratios:
-        print(f"{i} ratio: {obj1.distance(i)}")
+        val = obj1.distance(i)
+        print(f'{i} ratio: {val}')
+        metrics[str(i)+' ratio'+string] = val
     for i in angles:
-        print(f"{i} angle: {obj1.theta(i)}")
+        val = obj1.theta(i)
+        print(f'{i} angle: {val}')
+        metrics[str(i)+' angle'+string] = val
     #for i in symmetry:
     #    print(f"{i} symmetry: {obj1.transform(i)}")
-    if image_path2:
-        print(f"Facial Convexity Angle: {facial_convexity_angle(image_path1,image_path2)}")
+    if image_path_L != None:
+        #print(image_path_L,image_path_R)
+        val = facial_convexity_angle(image_path_R,image_path_L)
+        print(f'Facial Convexity Angle: {val}')
+        metrics['FCA'] = val
+    return metrics
 
-run_all('image2.jpeg')
+def save_results():
+    count = 0
+    for file in os.listdir():
+        beg = file.split('.')
+        if beg[1] == 'jpg':
+            count += 1
+    count = int(count/4)
+    print(count)
+    l = []
+    for num in range(1,count+1):
+        path = 'image'+str(num)+'.jpg'
+        path_L = 'image'+str(num)+'_L.jpg'
+        path_R = 'image'+str(num)+'_R.jpg'
+        path_smile = 'image'+str(num)+'_smile.jpg'
+        dic1 = run_all(path,image_path_L=path_L,image_path_R=path_R)
+        dic2 = run_all(path_smile)
+        dic_total = dic1 | dic2
+        l.append(dic_total)
+    df = pd.DataFrame(l)
+    df.to_csv('results.csv',index=False)
+
+count = 0
+for file in os.listdir():
+    beg = file.split('.')
+    if beg[1] == 'jpeg':
+        os.rename(file, beg[0]+'.jpg')
+
+#f = face('image2.jpeg')
+#print(f.distance('PFL-PFH'))
+save_results()
