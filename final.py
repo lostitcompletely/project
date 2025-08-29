@@ -8,6 +8,10 @@ import os
 class face:
     def __init__(self,image_path):
         self.symmetry_df = pd.read_csv('data/landmarks.csv')
+        if '_smile' in image_path:
+            self.smile = True
+        else:
+            self.smile = False
         self.symmetry_df = self.symmetry_df.dropna()
         self.ratios_df = pd.read_csv('data/ratios.csv')
         self.angles_df = pd.read_csv('data/angles.csv')
@@ -36,7 +40,7 @@ class face:
         self.mp_drawing = mp.solutions.drawing_utils
         self.drawing_spec = mp.solutions.drawing_utils.DrawingSpec(color=(255,255,255), thickness=1, circle_radius=2)
         face_mesh = self.mp_face_mesh.FaceMesh(static_image_mode=True, max_num_faces=1)
-        print("Faces detected:", bool(self.results.multi_face_landmarks))
+        #print("Faces detected:", bool(self.results.multi_face_landmarks))
         self.dic = {}
         h, w = self.img.shape[:2]  # Get image dimensions
         if self.results.multi_face_landmarks:
@@ -208,7 +212,13 @@ def save_results(output=False):
 
     # saves the list of dictionaries to a csv file
     df = pd.DataFrame(l)
+    df = df.drop(['smile index ratio'], axis=1)
+    df = df.rename(columns={'smile index ratio smile': 'smile index ratio'})
+
+    print(df.columns)
+    #df['smile index ratio']
     df.to_csv('results.csv',index=False)
 
 # pass output=True to print results to terminal
 save_results()
+#face('images/image3_smile.jpg').distance('smile index')

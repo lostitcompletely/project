@@ -1,5 +1,5 @@
-chin:philtrum,FWHR,bigonial:bizygomatic,LHI,mouth:nose,mouth:face,smile index,lower:midface,nose width:length,intercanthal:mouth,eye separation ratio
-17,234,172,17,61,61,61,2,235,133,468
-152,454,397,14,291,291,291,200,455,362,473
-2,9,234,13,98,234,12,9,8,61,234
-0,13,454,0,326,454,14,2,4,291,454
+chin:philtrum,FWHR,bigonial:bizygomatic,LHI,mouth:nose,mouth:face,smile index,lower:midface,nose width:length,intercanthal:mouth,eye_separation,PFL-PFH,eyebrow,golden,fifths,midface
+17,234,172,17,61,61,61,2,235,133,468,,,,,
+152,454,397,14,291,291,291,200,455,362,473,,,,,
+2,9,234,13,98,234,12,9,8,61,234,,,,,
+0,13,454,0,326,454,14,2,4,291,454,,,,,
