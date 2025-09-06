@@ -215,9 +215,9 @@ def save_results(output=False):
     df = df.drop(['smile index ratio'], axis=1)
     df = df.rename(columns={'smile index ratio smile': 'smile index ratio'})
 
-    print(df.columns)
+    #print(df.columns)
     #df['smile index ratio']
-    df.to_csv('results.csv',index=False)
+    df.to_csv('data/results.csv',index=False)
 
 # pass output=True to print results to terminal
 save_results()
