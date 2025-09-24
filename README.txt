@@ -9,17 +9,17 @@ golden = ||2-200|| / ||9-2||
 fifths = ||234-454|| / 5
 midface = 2 * ||468-473|| / (||468-0|| + ||473-0||)
 
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 ANGLES:
-Forumlas used to find ANGLES
+Forumlas used to find angles
 arccos((|L1-L2|.|L3-L2|) / sqrt(||L1-L2||^2+||L3-L2||^2)) angle between landmark1, landmark2 and landmark3 
 where landmark 2 is the point the 2 vectors meet in data/angles.csv
 used in the face.theta method
 
 facial convexity angle (FCA) = averages the left and right yaw angles to get the facial convexity angle using the method for other angles
 
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 SYMMETRIES:
 Finding a way to measure symmetries 
